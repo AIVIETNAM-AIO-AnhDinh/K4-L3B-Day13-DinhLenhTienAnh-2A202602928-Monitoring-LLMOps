@@ -2,6 +2,7 @@
 __pycache__/
 *.pyc
 .DS_Store
+data/logs.baseline.jsonl
 data/logs.jsonl
 data/audit.jsonl
 .env

@@ -29,20 +29,20 @@
 | Trace metadata | [`evidence/08-trace-metadata.png`](evidence/08-trace-metadata.png) · [`evidence/08-trace-metadata.txt`](evidence/08-trace-metadata.txt) |
 | Prompt versions | [`evidence/09-prompt-versions.png`](evidence/09-prompt-versions.png) · [`evidence/09-prompt-versions.txt`](evidence/09-prompt-versions.txt) |
 | Prompt rollback | [`evidence/10-prompt-rollback.png`](evidence/10-prompt-rollback.png) · [`evidence/10-prompt-rollback.txt`](evidence/10-prompt-rollback.txt) |
-| Dashboard runtime | [`evidence/11-dashboard-overview.png`](evidence/11-dashboard-overview.png) · [`evidence/11b-langfuse-home-dashboard.png`](evidence/11b-langfuse-home-dashboard.png) |
+| Dashboard runtime | [`evidence/11-dashboard-overview.png`](evidence/11-dashboard-overview.png) · [`evidence/11-dashboard-overview-2.png`](evidence/11-dashboard-overview-2.png) · [`evidence/11-dashboard-overview-3.png`](evidence/11-dashboard-overview-3.png) |
 | Incident metric | [`evidence/12-incident-metric.png`](evidence/12-incident-metric.png) · [`evidence/12-incident-metric.txt`](evidence/12-incident-metric.txt) |
 | Incident log | [`evidence/13-incident-log.png`](evidence/13-incident-log.png) · [`evidence/13-incident-log.txt`](evidence/13-incident-log.txt) |
 | Incident trace | [`evidence/14-incident-trace.png`](evidence/14-incident-trace.png) · [`evidence/14-incident-trace.txt`](evidence/14-incident-trace.txt) |
 
-> Ảnh Langfuse đã che public key (`scope.attributes.public_key`) và email tài khoản. `11-dashboard-overview.png` là dashboard 6 panel của `scripts/dashboard.py` trên `data/logs.jsonl`; `11b` là dashboard mặc định của Langfuse, chỉ để tham khảo thêm.
+> Ảnh Langfuse đã che public key (`scope.attributes.public_key`) và email tài khoản. Ba ảnh `11-dashboard-overview*.png` là dashboard **Langfuse Home** của project cá nhân (time range Past 1 day), chụp theo thứ tự từ trên xuống.
 
 ## 3. Kết quả kỹ thuật
 
 | Nội dung | Baseline | Kết quả cuối | Nhận xét |
 |---|---|---|---|
-| `validate_logs.py` | 30/100 — 20/21 record thiếu `correlation_id`/enrichment, 0 correlation ID | 100/100 — 95 record, 40 correlation ID, 0 leak (sau CP2) | Log cũ đã đổi tên thành `data/logs.baseline.jsonl` trước khi đo lại |
-| `validate_dashboard.py` | HỢP LỆ 6/6 | HỢP LỆ 6/6 | Validator chỉ kiểm tra contract; dashboard runtime là `scripts/dashboard.py` đọc `data/logs.jsonl` |
-| `pytest` | 22 passed | 53 passed (CP2) | CP1: test PII, middleware, enrichment, scrub. CP2: test child observation, không lọt PII vào trace, span lỗi, phép tính dashboard |
+| `validate_logs.py` | 30/100 — 20/21 record thiếu `correlation_id`/enrichment, 0 correlation ID | 100/100 — 147 record, 67 correlation ID, 0 leak (cuối, gồm CP1–CP3) | Log cũ đã đổi tên thành `data/logs.baseline.jsonl` trước khi đo lại |
+| `validate_dashboard.py` | HỢP LỆ 6/6 | HỢP LỆ 6/6 | Validator chỉ kiểm tra contract `config/dashboard.yaml`; dashboard runtime là Langfuse Home (xem mục 6) |
+| `pytest` | 22 passed | 49 passed (cuối) | CP1: test PII, middleware, enrichment, scrub. CP2: test child observation, không lọt PII vào trace, span lỗi |
 | Số traces hợp lệ | 0 (trace chỉ có root `lab-agent-run`, prompt `local-fallback` vì chưa có prompt trên Langfuse) | 18 trace `dev` đủ root + `retrieval` + `llm-generation`, gắn prompt v1/v2; thêm 40 trace `practice` | Danh sách: [06-trace-list.txt](evidence/06-trace-list.txt) |
 | Số PII leak | 0 | 0 | Baseline 0 chỉ vì `summarize_text` scrub `message_preview`; processor chưa được đăng ký nên `session_id`, lỗi, exception không được bảo vệ |
 | Latency P95 / TTFT P95 | CP1: P95 ≈ 430ms/request warm | Warm ≈ 161ms; P95 cửa sổ 60 phút 1,375ms / TTFT P95 55ms | P95 cửa sổ bị kéo lên bởi request đầu tiên của mỗi process (fetch prompt 1.3–1.9s). Warm giảm từ ~430ms xuống ~161ms sau khi tạo prompt, vì trước đó mỗi request đều gọi Langfuse và nhận 404 (không được cache) |
@@ -76,12 +76,15 @@
 
 ## 6. Dashboard, SLO và alerts
 
-- **Dashboard và sáu panel:** `python scripts/dashboard.py` (mở http://127.0.0.1:8050; dùng `--anchor latest` để xem lại log cũ, `--out file.html` để xuất snapshot).
-  - Script đọc `config/dashboard.yaml` và `data/logs.jsonl` mỗi lần tải trang, cửa sổ 60 phút, tự refresh 30s.
-  - Sáu panel đúng contract: Latency P50/P95/P99 + TTFT P95; Traffic; Error rate + breakdown theo `error_type` + retrieval success; Cost; Tokens in/out; Quality.
-  - Mỗi panel có đơn vị, giá trị của đúng aggregation được threshold, trạng thái ✓/▲ so với threshold, đường threshold (với panel theo phút), tooltip và bảng số liệu.
-  - Cách tính nằm trong hàm thuần `compute()`, có test (`tests/test_dashboard_runtime.py`) và dùng chung `percentile()` với endpoint `/metrics`.
-  - Đã kiểm tra dashboard phản ứng đúng bằng practice incident trên một server riêng (log riêng, `APP_ENV=practice`): `tool_fail` làm panel Errors chuyển BREACH (error 25%, retrieval 75% trên cả cửa sổ), `rag_slow` đẩy P95 lên 2,666ms, `cost_spike` đẩy chi phí từ ~0.0018 lên ~0.0078 USD/request.
+- **Dashboard và sáu panel:** dashboard runtime là **Langfuse Home** của project cá nhân (time range Past 1 day, env `dev` + `practice`), dữ liệu từ các trace của lab ([11](evidence/11-dashboard-overview.png), [11-2](evidence/11-dashboard-overview-2.png), [11-3](evidence/11-dashboard-overview-3.png)). Đối chiếu với sáu panel trong `config/dashboard.yaml`:
+  - **Latency:** widget *Trace latency percentiles* cho `day13-agent-request` p50 0.16s, p90 2.66s, p95 2.67s, p99 2.67s. *Observation latency percentiles* tách theo bước: `retrieval` p95 2.51s, `llm-generation` p95 0.16s. TTFT không có widget riêng; xem cột *Time To First Token* của từng generation trong Tracing (~0.05–0.06s).
+  - **Traffic:** *Traces* 115 trace `day13-agent-request`, *Observations by time* 271 observation.
+  - **Errors:** *Observations by Level*: ERROR 20, DEFAULT 251. 20 ERROR là 10 request practice `tool_fail` (root + `retrieval` mỗi request). Retrieval success không có widget riêng; từ observation `retriever` là 73/83 ≈ 88%, nếu chỉ tính `dev` là 100%.
+  - **Cost:** *Model costs* $0.21 (`claude-sonnet-4-5`, 16.16K token); *User consumption* chia theo `user_id_hash`.
+  - **Tokens:** *Model Usage* → tab *Usage by type* (input/output).
+  - **Quality:** `quality_score` hiện chỉ có trong log `response_sent`, chưa gửi lên Langfuse làm score, nên widget *Scores* báo "No data".
+  - Các con số theo đúng contract (P50/P95/P99, TTFT P95, error rate, retrieval success, cost, tokens in/out, quality) được tính lại từ `data/logs.jsonl` cho từng pha sự cố ở [12-incident-metric.txt](evidence/12-incident-metric.txt). Endpoint `/metrics` của API trả P50/P95/P99, TTFT P95, cost, token, error breakdown và quality trung bình.
+  - Practice incident chạy trên server riêng (log riêng, `APP_ENV=practice`): `tool_fail` cho error 25% và retrieval 75% trên cả phiên practice; `rag_slow` đẩy P95 lên 2,666ms; `cost_spike` đẩy chi phí từ ~0.0018 lên ~0.0078 USD/request. Trên Langfuse Home thấy tương ứng ERROR (Sum: 20) và `retrieval` p95 2.51s.
 - **SLO và lý do chọn:** giữ SLO của đề (`config/slo.yaml`): 99.5% request trong 28 ngày phải có `response_sent` với `latency_ms <= 3000`. Mỗi `request_failed` tự động là bad event.
   - Giữ 3000ms vì khớp threshold panel Latency; baseline warm ~161ms và cold start 1.3–1.9s đều dưới ngưỡng, nên cold start không bị tính là lỗi.
   - Hạn chế đã thấy: `latency_ms` đo bên trong `agent.run`, không gồm thời gian request phải chờ khi event loop bị chặn. Client đo ~2.2s ở concurrency 5 trong khi server ghi ~160ms, nên SLI này đánh giá thấp latency người dùng thực sự thấy.
@@ -104,7 +107,7 @@
   - sau fix: 10:38:51.
 - **Triệu chứng từ metrics:** latency P95 tăng từ **162ms lên 2,672ms** (16.5 lần), P50 từ 161ms lên 2,666ms. Mức này vượt `latency_threshold_ms` 2000 của challenge và ngưỡng alert `HighLatencyP95`, nhưng vẫn dưới đường 3000ms của dashboard.
   - Không đổi: TTFT P95 giữ 55ms, error rate 0%, retrieval success 100%, cost/token nằm trong dao động ngẫu nhiên của fake LLM, quality 0.84.
-  - Suy ra: thời gian tăng thêm nằm **trước** lúc LLM sinh token đầu tiên. Bảng so sánh ở [12-incident-metric.txt](evidence/12-incident-metric.txt); dashboard thấy spike ở phút 10:37 và hồi phục ở 10:38 ([12-incident-metric.png](evidence/12-incident-metric.png)).
+  - Suy ra: thời gian tăng thêm nằm **trước** lúc LLM sinh token đầu tiên. Bảng so sánh ở [12-incident-metric.txt](evidence/12-incident-metric.txt); ảnh [12-incident-metric.png](evidence/12-incident-metric.png) là snapshot dashboard cục bộ chụp ngay lúc điều tra (spike ở phút 10:37, hồi phục ở 10:38). Script dashboard này sau đó đã được gỡ khỏi repo; bảng số trong file `.txt` tính lại được trực tiếp từ `data/logs.jsonl`.
 - **Log line và correlation ID liên quan:** cả 5 dòng `response_sent` trong cửa sổ sự cố đều có `latency_ms` khoảng 2,662–2,672 nhưng HTTP 200, `tool_success=true`, `ttft_ms` 50–55 và vẫn `prompt_version=1` như trước sự cố. Như vậy không phải lỗi và không phải do đổi prompt. Request chậm nhất: `req-54ab57b0` (`latency_ms=2672`, `ttft_ms=55`, 03:37:25.855Z) ([13-incident-log.txt](evidence/13-incident-log.txt)).
 - **Trace ID và span gây ảnh hưởng:** trace `fff9da7d4a21f23e69b45c1aa403a280` (metadata `correlation_id=req-54ab57b0`).
   - Span **`retrieval` (retriever) kéo dài 2,512ms, chiếm 94% của 2,673ms**. `llm-generation` chỉ bắt đầu sau khi retrieval xong và vẫn 161ms, TTFT 0.056s.
@@ -149,15 +152,16 @@
 - **Hạn chế hoặc phần chưa hoàn thành, nếu có:**
   - `latency_ms` chỉ đo bên trong `agent.run`. `/chat` là `async def` nhưng gọi hàm blocking, nên ở concurrency 5 request phải xếp hàng: client thấy 10.7–13.4s trong khi log ghi ~2.67s. SLI hiện tại vì vậy đánh giá thấp latency người dùng thấy.
   - Quality proxy chỉ là heuristic.
-  - Dashboard là script local (không host), và alert mới là định nghĩa YAML, chưa nối Slack thật.
+  - Dashboard runtime dùng Langfuse Home mặc định nên chưa khớp hoàn toàn contract `config/dashboard.yaml`: time range 1 ngày thay vì 60 phút, không có đường threshold, thiếu widget riêng cho TTFT P95, retrieval success và quality.
+  - Alert mới là định nghĩa YAML, chưa nối Slack thật.
   - Tên project Langfuse chưa theo đúng mẫu `day13-k4-l3b-<MSSV>` của đề.
 
 ## 9. Checklist trước khi nộp
 
-- [ ] Kết quả và evidence thuộc commit SHA cuối.
+- [x] Kết quả và evidence thuộc commit SHA cuối.
 - [x] Tất cả ảnh/output mở được bằng đường dẫn tương đối.
 - [x] Incident evidence nối đúng metric → log → trace.
-- [ ] Trace/prompt evidence thuộc project Langfuse cá nhân và ảnh không lộ key/secret.
+- [x] Trace/prompt evidence thuộc project Langfuse cá nhân và ảnh không lộ key/secret.
 - [x] Repository chạy lại được theo README.
 - [x] Không có secret, API key, PII thô hoặc evidence của người khác/lớp khác.
 - [ ] URL repo và commit SHA cuối đã được nộp trên LMS/Codelabs.

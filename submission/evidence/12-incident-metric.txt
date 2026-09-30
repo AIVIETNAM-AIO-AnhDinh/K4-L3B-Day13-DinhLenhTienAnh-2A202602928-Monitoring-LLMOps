@@ -1,6 +1,6 @@
 # CP3 — 2026-09-30 10:39 +07 — challenge day13-k4-l3b-monitoring-llmops-v1 (cohort K4) — working tree on top of 61a34f8
-# Same 5 challenge queries, `load_test.py --challenge --concurrency 5`, three phases. Aggregations = scripts/dashboard.py (same as panels).
-# Times UTC (local = UTC+7). Dashboard image: 12-incident-metric.png (60-min window, spike at 10:37 local, recovery at 10:38).
+# Same 5 challenge queries, `load_test.py --challenge --concurrency 5`, three phases.
+# Computed directly from data/logs.jsonl (percentile() = app/metrics.py, same as the /metrics endpoint). Times UTC (local = UTC+7).
 
 phase                       n   p50_ms   p95_ms   p99_ms  ttft_p95   err% retrieval%  cost/req  tok_out  quality
 healthy  (before inject)    5    161.0    162.0    162.0      55.0    0.0      100.0    0.0019      604     0.84
