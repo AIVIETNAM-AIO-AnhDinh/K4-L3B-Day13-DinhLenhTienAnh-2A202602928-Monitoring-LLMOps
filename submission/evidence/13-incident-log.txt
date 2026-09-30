@@ -1,0 +1,27 @@
+# CP3 — 2026-09-30 10:39 +07 — challenge day13-k4-l3b-monitoring-llmops-v1 (cohort K4) — working tree on top of 61a34f8
+# data/logs.jsonl, response_sent + control events in the incident window (payload/answer previews omitted).
+
+2026-09-30T03:36:56.897901Z req-bf70d14f response_sent feature=monitoring latency_ms=157 ttft_ms=51 tokens_out=109 tool_success=True prompt=day13-chat v1
+2026-09-30T03:36:57.059913Z req-cae67b87 response_sent feature=monitoring latency_ms=160 ttft_ms=55 tokens_out=93 tool_success=True prompt=day13-chat v1
+2026-09-30T03:36:57.225589Z req-9f13f4be response_sent feature=monitoring latency_ms=162 ttft_ms=55 tokens_out=162 tool_success=True prompt=day13-chat v1
+2026-09-30T03:36:57.390242Z req-260a8243 response_sent feature=monitoring latency_ms=161 ttft_ms=54 tokens_out=114 tool_success=True prompt=day13-chat v1
+2026-09-30T03:36:57.555376Z req-54c4a3a5 response_sent feature=monitoring latency_ms=161 ttft_ms=55 tokens_out=126 tool_success=True prompt=day13-chat v1
+2026-09-30T03:37:17.718429Z incident_enabled (control plane)
+2026-09-30T03:37:20.497692Z req-0d9ac9b9 response_sent feature=monitoring latency_ms=2662 ttft_ms=50 tokens_out=152 tool_success=True prompt=day13-chat v1
+2026-09-30T03:37:23.165401Z req-22ce65e1 response_sent feature=monitoring latency_ms=2666 ttft_ms=53 tokens_out=153 tool_success=True prompt=day13-chat v1
+2026-09-30T03:37:25.855037Z req-54ab57b0 response_sent feature=monitoring latency_ms=2672 ttft_ms=55 tokens_out=160 tool_success=True prompt=day13-chat v1
+2026-09-30T03:37:28.521503Z req-e558fd5f response_sent feature=monitoring latency_ms=2663 ttft_ms=55 tokens_out=159 tool_success=True prompt=day13-chat v1
+2026-09-30T03:37:31.193852Z req-c75d93be response_sent feature=monitoring latency_ms=2668 ttft_ms=55 tokens_out=110 tool_success=True prompt=day13-chat v1
+2026-09-30T03:38:51.715903Z incident_disabled (control plane)
+2026-09-30T03:38:51.988228Z req-308bcb4e response_sent feature=monitoring latency_ms=156 ttft_ms=50 tokens_out=169 tool_success=True prompt=day13-chat v1
+2026-09-30T03:38:52.142587Z req-0f9ad3ff response_sent feature=monitoring latency_ms=152 ttft_ms=50 tokens_out=91 tool_success=True prompt=day13-chat v1
+2026-09-30T03:38:52.299516Z req-88983882 response_sent feature=monitoring latency_ms=153 ttft_ms=52 tokens_out=176 tool_success=True prompt=day13-chat v1
+2026-09-30T03:38:52.464224Z req-50ce466e response_sent feature=monitoring latency_ms=161 ttft_ms=55 tokens_out=116 tool_success=True prompt=day13-chat v1
+2026-09-30T03:38:52.625774Z req-c9ead7cd response_sent feature=monitoring latency_ms=157 ttft_ms=51 tokens_out=162 tool_success=True prompt=day13-chat v1
+
+# Selected request (slowest in the incident window) — full log lines:
+{"service": "api", "payload": {"message_preview": "Which signal should be checked after latency increases?"}, "event": "request_received", "env": "dev", "model": "claude-sonnet-4-5", "session_id": "k4-l3b-challenge-s04", "user_id_hash": "c3a24a72d92a", "feature": "monitoring", "correlation_id": "req-54ab57b0", "level": "info", "ts": "2026-09-30T03:37:23.167303Z"}
+{"service": "api", "latency_ms": 2672, "ttft_ms": 55, "tokens_in": 36, "tokens_out": 160, "cost_usd": 0.002508, "quality_score": 0.9, "tool_name": "retrieval", "tool_success": true, "prompt_name": "day13-chat", "prompt_label": "production", "prompt_version": "1", "payload": {"answer_preview": "Starter answer. You should improve this output logic and add better quality chec..."}, "event": "response_sent", "env": "dev", "model": "claude-sonnet-4-5", "session_id": "k4-l3b-challenge-s04", "user_id_hash": "c3a24a72d92a", "feature": "monitoring", "correlation_id": "req-54ab57b0", "level": "info", "ts": "2026-09-30T03:37:25.855037Z"}
+
+Log findings: all 5 challenge requests slow (~2665ms) but HTTP 200, tool_success=true, same prompt v1 before/during/after
+=> not a prompt change, not an error. ttft_ms unchanged => slowdown is before generation. Selected correlation_id: req-54ab57b0 (2672ms).

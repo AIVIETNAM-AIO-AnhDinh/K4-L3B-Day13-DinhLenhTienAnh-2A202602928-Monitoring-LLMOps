@@ -1,0 +1,4 @@
+# CP4 final — 2026-09-30 11:02 +07 — working tree for the submission commit (on top of 61a34f8)
+
+$ python scripts/validate_dashboard.py
+HỢP LỆ: 6/6 panel có trong dashboard contract.

@@ -1,0 +1,7 @@
+# CP2 — 2026-09-30 09:44 +07 — working tree on top of 61a34f8 — Langfuse project id cmunh5vij0fhoad0cuivi8yo8
+# Text rendering of the waterfall for trace 1d7e88092fc3c43338042db737548435 (correlation_id req-a3cd7d22). Take the UI screenshot for 07-trace-waterfall.png from the same trace.
+
+day13-agent-request  (trace)
+└── lab-agent-run [agent]  +0ms → +162ms  (162ms)
+    ├── retrieval [retriever]  +0ms → +0ms  (0ms)
+    └── llm-generation [generation]  +1ms → +161ms  (160ms)  model=claude-sonnet-4-5 usage={'input': 28, 'output': 124, 'total': 152} cost_total=0.001944 ttft=0.055s prompt=day13-chat v1

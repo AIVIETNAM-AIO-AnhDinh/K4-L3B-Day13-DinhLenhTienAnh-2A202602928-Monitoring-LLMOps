@@ -1,0 +1,12 @@
+# CP3 — 2026-09-30 10:39 +07 — challenge day13-k4-l3b-monitoring-llmops-v1 (cohort K4) — working tree on top of 61a34f8
+# Same 5 challenge queries, `load_test.py --challenge --concurrency 5`, three phases. Aggregations = scripts/dashboard.py (same as panels).
+# Times UTC (local = UTC+7). Dashboard image: 12-incident-metric.png (60-min window, spike at 10:37 local, recovery at 10:38).
+
+phase                       n   p50_ms   p95_ms   p99_ms  ttft_p95   err% retrieval%  cost/req  tok_out  quality
+healthy  (before inject)    5    161.0    162.0    162.0      55.0    0.0      100.0    0.0019      604     0.84
+incident (after inject)     5   2666.0   2672.0   2672.0      55.0    0.0      100.0    0.0023      734     0.84
+recovered (after fix)       5    156.0    161.0    161.0      55.0    0.0      100.0    0.0022      714     0.84
+
+Symptom: latency P95 162ms -> 2672ms (x16.5), above challenge latency_threshold_ms=2000 and alert HighLatencyP95 (>2000ms).
+Unchanged: TTFT P95 (55ms), error rate, retrieval success, cost/tokens (within fake-LLM random range), quality.
+=> extra time is spent before the LLM produces its first token. Window: 03:37:17Z-03:38:51Z (10:37:17-10:38:51 local).

@@ -48,9 +48,14 @@ async def metrics() -> dict:
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: Request, body: ChatRequest) -> ChatResponse:
-    # TODO: Enrich logs with request context (user_id_hash, session_id, feature, model, env)
-    # bind_contextvars(...)
-    
+    bind_contextvars(
+        user_id_hash=hash_user_id(body.user_id),
+        session_id=body.session_id,
+        feature=body.feature,
+        model=agent.model,
+        env=os.getenv("APP_ENV", "dev"),
+    )
+
     log.info(
         "request_received",
         service="api",
@@ -75,6 +80,9 @@ async def chat(request: Request, body: ChatRequest) -> ChatResponse:
             quality_score=result.quality_score,
             tool_name="retrieval",
             tool_success=True,
+            prompt_name=result.prompt_name,
+            prompt_label=result.prompt_label,
+            prompt_version=result.prompt_version,
             payload={"answer_preview": summarize_text(result.answer)},
         )
         return ChatResponse(

@@ -1,0 +1,79 @@
+# CP2 — 2026-09-30 09:44 +07 — working tree on top of 61a34f8 — Langfuse project id cmunh5vij0fhoad0cuivi8yo8
+# Trace 1d7e88092fc3c43338042db737548435 — metadata/IO as stored in Langfuse (SDK scope/resource attributes omitted).
+
+{
+  "name": "lab-agent-run",
+  "type": "AGENT",
+  "userId": "105a9cef3903",
+  "sessionId": "s10",
+  "version": "1",
+  "metadata": {
+    "correlation_id": "req-a3cd7d22",
+    "model": "claude-sonnet-4-5",
+    "feature": "qa",
+    "prompt_fetch_error": "",
+    "prompt_source": "langfuse",
+    "prompt_version": 1,
+    "prompt_label": "production",
+    "prompt_name": "day13-chat",
+    "query_preview": "How should alerts be designed?",
+    "doc_count": 1
+  }
+}
+{
+  "name": "retrieval",
+  "type": "RETRIEVER",
+  "parentObservationId": "76355e9df444439a",
+  "userId": "105a9cef3903",
+  "sessionId": "s10",
+  "metadata": {
+    "correlation_id": "req-a3cd7d22",
+    "model": "claude-sonnet-4-5",
+    "feature": "qa"
+  },
+  "input": "{\"query_preview\": \"How should alerts be designed?\"}",
+  "output": "{\"doc_count\": 1, \"docs_preview\": [\"No domain document matched. Use general fallback answer.\"]}"
+}
+{
+  "name": "llm-generation",
+  "type": "GENERATION",
+  "parentObservationId": "76355e9df444439a",
+  "userId": "105a9cef3903",
+  "sessionId": "s10",
+  "metadata": {
+    "correlation_id": "req-a3cd7d22",
+    "model": "claude-sonnet-4-5",
+    "feature": "qa",
+    "ttft_ms": 55,
+    "prompt_source": "langfuse",
+    "prompt_version": 1,
+    "prompt_label": "production",
+    "prompt_name": "day13-chat"
+  },
+  "input": "{\"prompt_preview\": \"Feature=qa Docs=No domain document matched. Use general fallback answer. Question=How should alerts be designed?\"}",
+  "output": "{\"answer_preview\": \"Starter answer. You should improve this output logic and add better quality chec...\"}",
+  "model": "claude-sonnet-4-5",
+  "usageDetails": {
+    "input": 28,
+    "output": 124,
+    "total": 152
+  },
+  "costDetails": {
+    "input": 8.4e-05,
+    "output": 0.00186,
+    "total": 0.001944
+  },
+  "totalCost": 0.001944,
+  "completionStartTime": "2026-09-30 02:34:19.080000+00:00",
+  "timeToFirstToken": 0.055,
+  "promptName": "day13-chat",
+  "promptVersion": 1
+}
+
+# Error example (practice tool_fail): trace c2d9ae813cdda0a71be5d4ff54198019 correlation_id req-d93e4ec0
+{
+  "root_level": "ERROR",
+  "root_status": "Vector store timeout",
+  "retrieval_level": "ERROR",
+  "retrieval_status": "RuntimeError: Vector store timeout"
+}

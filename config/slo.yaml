@@ -7,7 +7,21 @@ primary_slo:
     total_event: 'event == "request_received"'
   target_percent: 99.5
   error_budget_percent: 0.5
-  note: Học viên phải giải thích hoặc điều chỉnh ngưỡng bằng baseline của mình. Ví dụ nếu có 10,000 request trong cửa sổ 28 ngày, error budget 0.5% nghĩa là tối đa 50 request được phép không đạt SLO.
+  # error budget (số request) = total_event trong 28 ngày × 0.5%
+  # ví dụ 1,000 req/ngày × 28 ngày = 28,000 req -> tối đa 140 request được phép lỗi hoặc > 3000ms.
+  error_budget_example:
+    requests_per_day: 1000
+    window_requests: 28000
+    allowed_bad_requests: 140
+  rationale: >
+    Giữ ngưỡng 3000ms và target 99.5% của đề vì khớp threshold panel latency trong
+    config/dashboard.yaml. Baseline đo được (data/logs.jsonl, CP2): request warm có
+    latency_ms khoảng 160ms, request đầu tiên của process khoảng 1.4-2.0s do phải fetch
+    prompt từ Langfuse, nên 3000ms còn dư địa cho cold start mà không bị tính là lỗi.
+    Request lỗi (request_failed) không có response_sent nên tự động là bad event.
+    Practice incident: tool_fail làm 100% request fail (đốt budget ngay), còn rag_slow
+    đẩy P95 lên ~2667ms (vẫn < 3000ms) nên không đốt budget nhưng đã là regression 16x;
+    vì vậy alert latency đặt ở 2000ms (xem config/alert_rules.yaml) để báo trước khi SLO vỡ.
 guardrails:
   error_rate_pct_max: 2
   daily_cost_usd_max: 2.5

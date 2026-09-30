@@ -3,12 +3,17 @@ from __future__ import annotations
 import hashlib
 import re
 
+# Applied in order. Email goes first so digits inside an address are not
+# half-redacted by phone_vn; longer digit runs (card > CCCD > phone) go before shorter ones.
 PII_PATTERNS: dict[str, str] = {
-    "email": r"[\w\.-]+@[\w\.-]+\.\w+",
-    "phone_vn": r"(?<!\d)(?:\+84|0)(?:[ .-]?\d){9}(?!\d)",
-    "cccd": r"\b\d{12}\b",
-    "credit_card": r"\b\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{4}\b",
-    # TODO: Add more patterns (e.g., Passport, Vietnamese address keywords)
+    "email": r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+",
+    # 13–19 digit PAN, optionally grouped with spaces/dashes (Visa/Master 16, Amex 15, ...).
+    "credit_card": r"(?<!\d)(?:\d[ -]?){12,18}\d(?!\d)",
+    "cccd": r"(?<!\d)\d{12}(?!\d)",
+    # 0xx / +84 / 84 followed by 9 digits, with optional space, dot or dash separators.
+    "phone_vn": r"(?<!\d)(?:\+?84|0)(?:[ .-]?\d){9}(?!\d)",
+    # Vietnamese passport: one uppercase letter + 7 digits, e.g. C1234567.
+    "passport": r"\b[A-Z]\d{7}\b",
 }
 
 

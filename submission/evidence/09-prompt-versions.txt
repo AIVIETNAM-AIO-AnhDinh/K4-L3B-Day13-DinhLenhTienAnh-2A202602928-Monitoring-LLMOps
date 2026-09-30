@@ -1,0 +1,13 @@
+# CP2 — 2026-09-30 09:44 +07 — working tree on top of 61a34f8 — Langfuse project id cmunh5vij0fhoad0cuivi8yo8
+# Prompt day13-chat as stored in Langfuse (GET /api/public/v2/prompts/day13-chat?version=N)
+
+--- version 1  labels=['baseline', 'production']  commit_message='v1 baseline: lab prompt contract (feature/docs/message)'
+Feature={{feature}}
+Docs={{docs}}
+Question={{message}}
+
+--- version 2  labels=['candidate', 'latest']  commit_message='v2 candidate: shorter bullet answers with doc citation'
+Answer in at most 3 short bullet points and cite the doc you used.
+Feature={{feature}}
+Docs={{docs}}
+Question={{message}}

@@ -1,0 +1,24 @@
+# CP0 baseline — 2026-09-30 09:26 +07 — commit 61a34f8
+
+$ python scripts/validate_logs.py
+--- Lab Verification Results ---
+Total log records analyzed: 21
+Records with missing required fields: 20
+Records with missing enrichment (context): 20
+Unique correlation IDs found: 0
+Potential PII leaks detected: 0
+
+--- Grading Scorecard (Estimates) ---
+- [FAILED] Missing required fields (ts, level, etc.)
+- [FAILED] Correlation ID propagation (less than 2 unique IDs)
+- [FAILED] Log enrichment (missing user_id_hash, etc.)
++ [PASSED] PII scrubbing
+
+Estimated Score: 30/100
+
+$ python scripts/validate_dashboard.py
+HỢP LỆ: 6/6 panel có trong dashboard contract.
+
+$ python -m pytest -q
+......................                                                   [100%]
+22 passed in 0.82s

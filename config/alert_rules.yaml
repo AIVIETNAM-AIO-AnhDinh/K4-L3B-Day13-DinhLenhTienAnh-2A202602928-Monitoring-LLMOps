@@ -1,25 +1,34 @@
+# Ba alert symptom-based, tính trên data/logs.jsonl (cùng nguồn với dashboard).
+# condition được đánh giá trên cửa sổ trượt [window]; alert chỉ bắn khi condition
+# đúng liên tục trong `duration` để tránh báo nhầm vì một request lẻ.
 alerts:
-  - name: TODO_alert_1
-    severity: TODO
-    condition: TODO
-    duration: TODO
+  - name: HighLatencyP95
+    severity: warning
+    condition: 'p95(latency_ms where event == "response_sent")[5m] > 2000'
+    duration: 5m
     type: symptom-based
     channel: slack
-    owner: TODO
+    slack_channel: '#k4-l3b-alerts'
+    owner: student-2A202602928
+    slo: fast_successful_requests
     runbook: docs/alerts.md#alert-1
-  - name: TODO_alert_2
-    severity: TODO
-    condition: TODO
-    duration: TODO
+  - name: HighErrorRateOrRetrievalFailing
+    severity: critical
+    condition: 'error_rate_pct[5m] > 2 or tool_success_rate_pct[5m] < 90'
+    duration: 3m
     type: symptom-based
     channel: slack
-    owner: TODO
+    slack_channel: '#k4-l3b-alerts'
+    owner: student-2A202602928
+    slo: fast_successful_requests
     runbook: docs/alerts.md#alert-2
-  - name: TODO_alert_3
-    severity: TODO
-    condition: TODO
-    duration: TODO
+  - name: CostPerRequestSpike
+    severity: warning
+    condition: 'avg(cost_usd where event == "response_sent")[15m] > 0.004'
+    duration: 15m
     type: symptom-based
     channel: slack
-    owner: TODO
+    slack_channel: '#k4-l3b-alerts'
+    owner: student-2A202602928
+    slo: guardrails.daily_cost_usd_max
     runbook: docs/alerts.md#alert-3

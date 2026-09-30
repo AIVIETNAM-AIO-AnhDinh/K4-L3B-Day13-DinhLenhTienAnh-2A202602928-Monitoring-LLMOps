@@ -22,6 +22,9 @@
     "error_type": {"type": ["string", "null"]},
     "tool_name": {"type": ["string", "null"]},
     "tool_success": {"type": ["boolean", "null"]},
+    "prompt_name": {"type": ["string", "null"]},
+    "prompt_label": {"type": ["string", "null"]},
+    "prompt_version": {"type": ["string", "null"]},
     "payload": {"type": ["object", "null"]}
   }
 }

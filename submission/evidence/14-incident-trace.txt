@@ -1,0 +1,21 @@
+# CP3 — 2026-09-30 10:39 +07 — challenge day13-k4-l3b-monitoring-llmops-v1 (cohort K4) — working tree on top of 61a34f8
+# Langfuse observations (GET /api/public/v2/observations) for the same query in each phase.
+# Query: "Which signal should be checked after latency increases?" (feature=monitoring)
+
+[healthy] correlation_id=req-54c4a3a5 trace_id=c0bbed79385b60aa8677e121caa05e2a prompt=day13-chat v1
+  lab-agent-run   AGENT      level=DEFAULT start=03:36:57.393 duration=   162ms 100.0%
+  └─ llm-generation  GENERATION level=DEFAULT start=03:36:57.394 duration=   161ms  99.4% ttft=0.055s model=claude-sonnet-4-5 usage={'input': 36, 'output': 126, 'total': 162}
+  └─ retrieval       RETRIEVER  level=DEFAULT start=03:36:57.394 duration=     0ms   0.0%
+
+[INCIDENT] correlation_id=req-54ab57b0 trace_id=fff9da7d4a21f23e69b45c1aa403a280 prompt=day13-chat v1
+  lab-agent-run   AGENT      level=DEFAULT start=03:37:23.181 duration=  2673ms 100.0%
+  └─ retrieval       RETRIEVER  level=DEFAULT start=03:37:23.181 duration=  2512ms  94.0%
+  └─ llm-generation  GENERATION level=DEFAULT start=03:37:25.693 duration=   161ms   6.0% ttft=0.056s model=claude-sonnet-4-5 usage={'input': 36, 'output': 160, 'total': 196}
+
+[recovered] correlation_id=req-308bcb4e trace_id=857c270f5354285150f8e546f6486915 prompt=day13-chat v1
+  lab-agent-run   AGENT      level=DEFAULT start=03:38:51.831 duration=   157ms 100.0%
+  └─ llm-generation  GENERATION level=DEFAULT start=03:38:51.831 duration=   157ms 100.0% ttft=0.05s model=claude-sonnet-4-5 usage={'input': 36, 'output': 169, 'total': 205}
+  └─ retrieval       RETRIEVER  level=DEFAULT start=03:38:51.831 duration=     0ms   0.0%
+
+Trace findings: in the incident trace the `retrieval` span takes ~2512ms (94% of the request) vs 0ms healthy;
+`llm-generation` is unchanged (161ms, TTFT 0.056s) and starts only after retrieval ends. After the fix retrieval is back to 0ms.

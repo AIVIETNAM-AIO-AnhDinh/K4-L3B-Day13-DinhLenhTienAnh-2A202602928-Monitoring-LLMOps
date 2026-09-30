@@ -1,0 +1,21 @@
+# CP2 — 2026-09-30 09:44 +07 — working tree on top of 61a34f8 — Langfuse project id cmunh5vij0fhoad0cuivi8yo8
+# Same input for every step: feature=qa, message="Explain why metrics traces and logs work together".
+# Lines tagged [..@8001] come from a fresh server started with LANGFUSE_PROMPT_LABEL=<label>; [..@8000] is the long-running app (label production), never restarted.
+# [langfuse ...] lines are label state read back from the Langfuse API right after each change. The app caches prompts for 60s (stale-while-revalidate).
+
+[baseline@8001] 2026-09-30T02:35:39.304685Z req-fbcf1201 label=baseline version=1 tokens_in=32  trace=30555bb0980526dde5a39429065205fe
+[candidate@8001] 2026-09-30T02:35:43.043104Z req-cf3b2011 label=candidate version=2 tokens_in=49  trace=c38c889da262a2a8c065ed9415879e87
+[langfuse 2026-09-30T02:35:58Z] v1: ['baseline', 'production'] | v2: ['candidate', 'latest']
+[production@8000 before promote] 2026-09-30T02:36:02.415937Z req-d8c8f75e label=production version=1 tokens_in=32  trace=f3b763a120882f3b873e36ec41b1ecdd
+--- PROMOTE: move production -> v2
+[langfuse 2026-09-30T02:36:04Z] v1: ['baseline'] | v2: ['candidate', 'latest', 'production']
+[production@8000 +0s, cache still warm] 2026-09-30T02:36:05.612805Z req-59b7023e label=production version=1 tokens_in=32  trace=1010c07890e7aca56a2e4146cc2fc2b0
+[production@8000 +62s #1 (stale-while-revalidate)] 2026-09-30T02:37:08.166881Z req-a9be533d label=production version=1 tokens_in=32  trace=b4c68858aac2b226d491a458e3f2f23e
+[production@8000 +63s #2] 2026-09-30T02:37:09.717605Z req-adae3bbb label=production version=2 tokens_in=49  trace=ff77b7f57bd56db87a89bef60c7d9c30
+--- ROLLBACK: move production -> v1
+[langfuse 2026-09-30T02:37:11Z] v1: ['baseline', 'production'] | v2: ['candidate', 'latest']
+[production@8000 +62s #1 (stale-while-revalidate)] 2026-09-30T02:38:14.567789Z req-a9928812 label=production version=2 tokens_in=49  trace=c34ac95e568041c9b1f42f492bd8c234
+[production@8000 +63s #2] 2026-09-30T02:38:16.121806Z req-edfe7dbb label=production version=1 tokens_in=32  trace=ba4e8833c9bd9b98b59615c6c8bac247
+
+Result: promote production v1->v2 took effect on the running app within one cache TTL (61s + 1 stale request);
+rollback v2->v1 likewise. No code change or restart. v2 adds one instruction line: tokens_in 32 -> 49 for the same input.

@@ -1,0 +1,16 @@
+# CP1 — 2026-09-30 09:28 +07 — working tree on top of 61a34f8
+
+# Fake PII sent in the request body (sample_queries.jsonl u01/u05/u09 + extra CCCD/passport case)
+# Inputs contained a fake email, VN phone, 16-digit card, 12-digit CCCD and passport number (values omitted here on purpose).
+
+$ grep REDACTED data/logs.jsonl
+req-4a01e5b0 request_received -> What is your refund policy? My email is [REDACTED_EMAIL]
+req-cfbc8612 request_received -> Here is my phone [REDACTED_PHONE_VN], what should be logged?
+req-62226541 request_received -> What is the policy for PII and credit card [REDACTED_CREDIT_CARD]?
+req-395ddab7 request_received -> What is your refund policy? My email is [REDACTED_EMAIL]
+req-b8681b9e request_received -> Here is my phone [REDACTED_PHONE_VN], what should be logged?
+req-ea5738c2 request_received -> What is the policy for PII and credit card [REDACTED_CREDIT_CARD]?
+req-9119a001 request_received -> CCCD [REDACTED_CCCD], passport [REDACTED_PASSPORT]
+
+$ grep -cE '<each raw input value, OR-ed>' data/logs.jsonl   # lines still containing raw PII
+0
